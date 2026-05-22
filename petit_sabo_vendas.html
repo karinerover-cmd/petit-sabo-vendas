@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Petit Sabó — Registro de Vendas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink: #D4537E;
+    --pink-light: #FBEAF0;
+    --pink-mid: #F4C0D1;
+    --pink-dark: #993556;
+    --bg: #FAFAF9;
+    --surface: #FFFFFF;
+    --border: #E8E5E0;
+    --text: #1A1A1A;
+    --muted: #888780;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* HEADER */
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  .logo-circle { width: 38px; height: 38px; border-radius: 50%; background: var(--pink-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .logo-circle svg { width: 20px; height: 20px; stroke: var(--pink); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .header-title { font-size: 15px; font-weight: 600; }
+  .header-sub { font-size: 12px; color: var(--muted); }
+
+  /* TABS */
+  .tab-bar { display: flex; overflow-x: auto; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; gap: 0; scrollbar-width: none; }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab { padding: 12px 16px; font-size: 13px; font-weight: 500; border: none; background: none; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+  .tab.active { color: var(--pink); border-bottom-color: var(--pink); }
+  .tab svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* CONTENT */
+  .content { padding: 16px; max-width: 600px; margin: 0 auto; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; }
+  .card-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
+  .card-title svg { width: 16px; height: 16px; stroke: var(--pink); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* FORM */
+  label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; font-weight: 500; letter-spacing: 0.02em; }
+  input, select, textarea { width: 100%; padding: 10px 13px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg); color: var(--text); margin-bottom: 13px; transition: border-color 0.15s; outline: none; }
+  input:focus, select:focus, textarea:focus { border-color: var(--pink); background: var(--surface); }
+  input[readonly] { background: #F5F3F0; color: var(--muted); }
+  textarea { resize: vertical; min-height: 70px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  @media (max-width: 400px) { .grid2 { grid-template-columns: 1fr; } .grid3 { grid-template-columns: 1fr 1fr; } }
+
+  /* BUTTONS */
+  .btn { padding: 11px 18px; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border: none; transition: all 0.15s; }
+  .btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .btn-primary { background: var(--pink); color: white; width: 100%; justify-content: center; }
+  .btn-primary:hover { background: var(--pink-dark); }
+  .btn-outline { background: none; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { background: var(--bg); border-color: var(--muted); }
+  .btn-ghost { background: none; border: none; color: var(--muted); padding: 6px 8px; }
+  .btn-ghost:hover { color: #E24B4A; }
+
+  /* METRICS */
+  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+  .metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 12px; text-align: center; }
+  .metric-val { font-size: 20px; font-weight: 600; color: var(--pink); }
+  .metric-label { font-size: 11px; color: var(--muted); margin-top: 3px; font-weight: 500; }
+
+  /* ROWS */
+  .row-item { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--border); }
+  .row-item:last-child { border-bottom: none; }
+  .row-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .row-name { font-size: 14px; font-weight: 500; }
+  .row-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* SALE ROW */
+  .sale-row { padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .sale-row:last-child { border-bottom: none; }
+  .sale-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .sale-produto { font-size: 14px; font-weight: 500; }
+  .sale-valor { font-size: 15px; font-weight: 600; color: var(--pink); }
+  .sale-meta { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.6; }
+
+  /* TAGS */
+  .tag { font-size: 11px; padding: 2px 9px; border-radius: 20px; font-weight: 500; display: inline-block; }
+  .tag-pix { background: #EAF3DE; color: #3B6D11; }
+  .tag-dinheiro { background: #FAEEDA; color: #633806; }
+  .tag-cartao { background: #E6F1FB; color: #0C447C; }
+  .tag-pink { background: var(--pink-light); color: var(--pink-dark); }
+
+  /* ALERTS */
+  .alert-success { background: #EAF3DE; color: #3B6D11; border-radius: var(--radius-sm); padding: 11px 14px; font-size: 13px; font-weight: 500; margin-bottom: 14px; display: none; border: 1px solid #C0DD97; }
+
+  /* COLLAPSE */
+  .collapse-trigger { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 4px 0; }
+  .collapse-trigger .arrow { transition: transform 0.2s; font-size: 18px; color: var(--muted); }
+  .collapse-trigger.open .arrow { transform: rotate(180deg); }
+  .collapse-body { display: none; padding-top: 14px; }
+  .collapse-body.open { display: block; }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+
+  /* INPUT ROW */
+  .input-inline { display: flex; gap: 8px; align-items: flex-end; }
+  .input-inline input { margin-bottom: 0; flex: 1; }
+
+  /* EMPTY */
+  .empty { text-align: center; color: var(--muted); font-size: 14px; padding: 2rem 0; }
+
+  /* TOP BAR ACTIONS */
+  .section-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .section-bar span { font-size: 14px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-circle">
+    <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+  </div>
+  <div>
+    <div class="header-title">Petit Sabó</div>
+    <div class="header-sub">Registro de vendas</div>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab active" onclick="showTab('venda')">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nova venda
+  </button>
+  <button class="tab" onclick="showTab('historico')">
+    <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> Histórico
+  </button>
+  <button class="tab" onclick="showTab('catalogo')">
+    <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Catálogo
+  </button>
+  <button class="tab" onclick="showTab('clientes')">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clientes
+  </button>
+  <button class="tab" onclick="showTab('guia')">
+    📋 Guia do Dia
+  </button>
+  <button class="tab" onclick="showTab('config')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> Config
+  </button>
+</div>
+
+<div class="content">
+
+  <!-- NOVA VENDA -->
+  <div id="sec-venda" class="section active">
+    <div id="alert-ok" class="alert-success">✓ Venda registrada com sucesso!</div>
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Dados da venda
+      </div>
+      <div class="grid2">
+        <div><label>Local / Feira</label><select id="v-local"></select></div>
+        <div><label>Data</label><input type="date" id="v-data"></div>
+      </div>
+      <label>Produto</label>
+      <select id="v-produto" onchange="calcTotal()"><option value="">Selecione o produto...</option></select>
+      <div class="grid3">
+        <div><label>Qtd</label><input type="number" id="v-qtd" value="1" min="1" oninput="calcTotal()"></div>
+        <div><label>Desconto (R$)</label><input type="number" id="v-desc" value="0" min="0" oninput="calcTotal()"></div>
+        <div><label>Total</label><input type="text" id="v-total" readonly placeholder="R$ 0,00"></div>
+      </div>
+      <label>Forma de pagamento</label>
+      <select id="v-pgto">
+        <option value="">Selecione...</option>
+        <option>Pix</option>
+        <option>Dinheiro</option>
+        <option>Cartão de crédito</option>
+        <option>Cartão de débito</option>
+      </select>
+      <hr class="divider">
+      <div class="collapse-trigger" id="cli-trigger" onclick="toggleCollapse('cli')">
+        <span style="font-size:14px;font-weight:500;">👤 Cliente <span style="font-size:12px;color:var(--muted);font-weight:400;">(opcional)</span></span>
+        <span class="arrow">⌄</span>
+      </div>
+      <div class="collapse-body" id="cli-body">
+        <label>Buscar cliente cadastrado</label>
+        <select id="v-cli-sel" onchange="preencherCliente()">
+          <option value="">Novo cliente / sem cadastro</option>
+        </select>
+        <div class="grid2">
+          <div><label>Nome</label><input type="text" id="v-cli-nome" placeholder="Nome completo"></div>
+          <div><label>Telefone</label><input type="tel" id="v-cli-tel" placeholder="(61) 9 0000-0000"></div>
+        </div>
+        <label>E-mail</label>
+        <input type="email" id="v-cli-email" placeholder="email@exemplo.com">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:14px;">
+          <input type="checkbox" id="v-salvar-cli" style="width:auto;margin:0;accent-color:var(--pink);">
+          <span style="font-size:13px;color:var(--muted);">Salvar no cadastro de clientes</span>
+        </label>
+      </div>
+      <hr class="divider">
+      <label>Observações</label>
+      <textarea id="v-obs" placeholder="Ex: cliente fidelidade, pedido especial..."></textarea>
+      <button class="btn btn-primary" onclick="registrarVenda()">Registrar venda</button>
+    </div>
+  </div>
+
+  <!-- HISTÓRICO -->
+  <div id="sec-historico" class="section">
+    <div class="metrics">
+      <div class="metric"><div class="metric-val" id="m-total">R$ 0</div><div class="metric-label">Total vendido</div></div>
+      <div class="metric"><div class="metric-val" id="m-qtd">0</div><div class="metric-label">Vendas</div></div>
+      <div class="metric"><div class="metric-val" id="m-ticket">R$ 0</div><div class="metric-label">Ticket médio</div></div>
+    </div>
+    <div class="section-bar" style="flex-wrap:wrap;gap:8px;">
+      <span>Vendas registradas</span>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <label style="font-size:12px;color:var(--muted);white-space:nowrap;">Filtrar dia:</label>
+          <input type="date" id="filtro-data" style="margin:0;padding:6px 10px;font-size:12px;width:auto;" onchange="renderVendas()">
+          <button class="btn btn-outline" style="padding:6px 9px;font-size:12px;" onclick="document.getElementById('filtro-data').value='';renderVendas()">&#x2715;</button>
+        </div>
+        <button class="btn btn-outline" onclick="exportarVendasCSV(false)">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar tudo
+        </button>
+        <button class="btn btn-primary" style="padding:8px 14px;font-size:13px;" onclick="exportarVendasCSV(true)">&#x2193; Exportar dia</button>
+      </div>
+    </div>
+    <div class="card" id="lista-vendas"><div class="empty">Nenhuma venda ainda.</div></div>
+  </div>
+
+  <!-- CATÁLOGO -->
+  <div id="sec-catalogo" class="section">
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Adicionar produto
+      </div>
+      <div class="grid2">
+        <div><label>Nome do produto</label><input type="text" id="p-nome" placeholder="Ex: Hidratante Morango"></div>
+        <div><label>Preço (R$)</label><input type="number" id="p-preco" placeholder="0,00" min="0" step="0.01"></div>
+      </div>
+      <label>Categoria</label>
+      <select id="p-cat" style="margin-bottom:14px;">
+        <option>Hidratante</option>
+        <option>Perfume / Home Spray</option>
+        <option>Vela</option>
+        <option>Sabonete</option>
+        <option>Kit</option>
+        <option>Outro</option>
+      </select>
+      <button class="btn btn-primary" onclick="adicionarProduto()">Adicionar ao catálogo</button>
+    </div>
+    <div class="card">
+      <div class="section-bar">
+        <span>Produtos cadastrados</span>
+        <button class="btn btn-outline" onclick="document.getElementById('imp-csv').click()">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Importar CSV
+        </button>
+        <input type="file" id="imp-csv" accept=".csv" style="display:none;" onchange="importarCSV(event)">
+      </div>
+      <div id="lista-produtos"><div class="empty">Nenhum produto.</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);padding: 0 2px;">Formato CSV para importar: nome, preço, categoria (sem cabeçalho)</div>
+  </div>
+
+  <!-- CLIENTES -->
+  <div id="sec-clientes" class="section">
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Adicionar cliente
+      </div>
+      <div class="grid2">
+        <div><label>Nome</label><input type="text" id="c-nome" placeholder="Nome completo"></div>
+        <div><label>Telefone</label><input type="tel" id="c-tel" placeholder="(61) 9 0000-0000"></div>
+      </div>
+      <label>E-mail</label>
+      <input type="email" id="c-email" placeholder="email@exemplo.com">
+      <button class="btn btn-primary" onclick="adicionarCliente()">Adicionar cliente</button>
+    </div>
+    <div class="card">
+      <div class="section-bar">
+        <span>Clientes cadastrados</span>
+        <button class="btn btn-outline" onclick="exportarClientesCSV()">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar
+        </button>
+      </div>
+      <div id="lista-clientes"><div class="empty">Nenhum cliente.</div></div>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <!-- GUIA DO DIA -->
+  <div id="sec-guia" class="section">
+    <div style="padding:4px 0 16px;">
+      <div style="font-size:18px;font-weight:600;margin-bottom:4px;">&#x1F4CB; Guia do Dia</div>
+      <div style="font-size:13px;color:var(--muted);">Siga este fluxo em cada dia de feira.</div>
+    </div>
+
+    <!-- ANTES -->
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--pink-light);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">&#x1F305;</div>
+        <div><div style="font-size:14px;font-weight:600;">Antes de abrir</div><div style="font-size:12px;color:var(--muted);">Faça isso ao chegar na feira</div></div>
+      </div>
+      <div id="steps-antes"></div>
+    </div>
+
+    <!-- DURANTE -->
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#FFF7E6;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">&#x1F6CD;</div>
+        <div><div style="font-size:14px;font-weight:600;">Durante a feira</div><div style="font-size:12px;color:var(--muted);">A cada venda realizada</div></div>
+      </div>
+      <div id="steps-durante"></div>
+    </div>
+
+    <!-- FECHAMENTO -->
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#EAF3DE;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">&#x1F4B0;</div>
+        <div><div style="font-size:14px;font-weight:600;">Fechamento do dia</div><div style="font-size:12px;color:var(--muted);">Antes de ir embora</div></div>
+      </div>
+      <div id="steps-fechamento"></div>
+    </div>
+
+    <!-- CHECKLIST PROGRESSO -->
+    <div class="card">
+      <div style="font-size:14px;font-weight:600;margin-bottom:12px;">&#x2705; Checklist do dia — <span id="check-progress" style="color:var(--pink)">0 / 0</span></div>
+      <div id="checklist-items"></div>
+      <button class="btn btn-outline" style="width:100%;margin-top:14px;font-size:12px;" onclick="resetChecklist()">Reiniciar checklist</button>
+    </div>
+  </div>
+
+  <div id="sec-config" class="section">
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Feiras e locais
+      </div>
+      <div class="input-inline" style="margin-bottom:14px;">
+        <input type="text" id="f-nome" placeholder="Nome da feira ou loja" style="margin-bottom:0;">
+        <button class="btn btn-outline" onclick="adicionarFeira()">+ Adicionar</button>
+      </div>
+      <div id="lista-feiras"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Backup dos dados
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Salve um backup completo e restaure quando precisar. Os dados ja ficam salvos automaticamente no navegador.</div>
+      <div style="display:flex;gap:8px;flex-direction:column;">
+        <button class="btn btn-outline" style="width:100%;" onclick="exportarBackup()">&#x1F4BE; Baixar backup (.json)</button>
+        <button class="btn btn-outline" style="width:100%;" onclick="document.getElementById('imp-backup').click()">&#x1F4C2; Restaurar backup</button>
+        <input type="file" id="imp-backup" accept=".json" style="display:none;" onchange="restaurarBackup(event)">
+      </div>
+      <div id="alert-backup" style="margin-top:10px;font-size:12px;color:#3B6D11;display:none;background:#EAF3DE;padding:8px 12px;border-radius:8px;border:1px solid #C0DD97;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:#E24B4A;">
+        <svg viewBox="0 0 24 24" style="stroke:#E24B4A"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Limpar dados
+      </div>
+      <button class="btn btn-outline" style="color:#E24B4A;border-color:#E24B4A;width:100%;" onclick="limparVendas()">Apagar histórico de vendas</button>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<script>
+let produtos = JSON.parse(localStorage.getItem('ps2_produtos') || 'null');
+let vendas   = JSON.parse(localStorage.getItem('ps2_vendas')   || '[]');
+let clientes = JSON.parse(localStorage.getItem('ps2_clientes') || '[]');
+let feiras   = JSON.parse(localStorage.getItem('ps2_feiras')   || 'null');
+
+if (!produtos) {
+  produtos = [
+    {id:1,nome:'Hidratante Morango',preco:35,cat:'Hidratante'},
+    {id:2,nome:'Perfume Amore di Fragola',preco:68,cat:'Perfume / Home Spray'},
+    {id:3,nome:'Vela Pumpkin Pie',preco:48,cat:'Vela'},
+    {id:4,nome:'Sabonete Petit',preco:22,cat:'Sabonete'},
+    {id:5,nome:'Kit Holiday Glow',preco:120,cat:'Kit'},
+  ];
+  save('ps2_produtos', produtos);
+}
+if (!feiras) {
+  feiras = ['Endossa Asa Sul','Endossa Asa Norte','Endossa Sudoeste','Feira da Torre'];
+  save('ps2_feiras', feiras);
+}
+
+function save(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
+
+document.getElementById('v-data').value = new Date().toISOString().split('T')[0];
+init();
+
+function init(){
+  renderFeirasSel(); renderProdutosSel(); renderProdutos();
+  renderVendas(); renderClientes(); renderCliSel(); renderFeirasConfig();
+  atualizarMetricas();
+}
+
+function showTab(t){
+  const tabs=['venda','historico','catalogo','clientes','guia','config'];
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',tabs[i]===t));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+t).classList.add('active');
+  if(t==='historico'){atualizarMetricas();renderVendas();}
+  if(t==='clientes'){renderClientes();}
+  if(t==='config'){renderFeirasConfig();}
+  if(t==='guia'){renderGuia();}
+}
+
+function toggleCollapse(id){
+  const t=document.getElementById(id+'-trigger');
+  const b=document.getElementById(id+'-body');
+  t.classList.toggle('open'); b.classList.toggle('open');
+}
+
+/* ---- FEIRAS ---- */
+function renderFeirasSel(){
+  const s=document.getElementById('v-local');
+  const v=s.value;
+  s.innerHTML='<option value="">Selecione...</option>';
+  feiras.forEach(f=>{const o=document.createElement('option');o.value=o.textContent=f;s.appendChild(o);});
+  if(v)s.value=v;
+}
+function renderFeirasConfig(){
+  const el=document.getElementById('lista-feiras');
+  if(!feiras.length){el.innerHTML='<div class="empty">Nenhum local cadastrado.</div>';return;}
+  el.innerHTML=feiras.map((f,i)=>`
+    <div class="row-item" id="feira-row-${i}">
+      <div id="feira-view-${i}" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px;">
+        <span class="row-name">${f}</span>
+        <div class="row-actions">
+          <button class="btn btn-outline" style="padding:5px 10px;font-size:12px;" onclick="iniciarEdicaoFeira(${i})">Editar</button>
+          <button class="btn btn-ghost" style="color:#E24B4A;" onclick="removerFeira(${i})">✕</button>
+        </div>
+      </div>
+      <div id="feira-edit-${i}" style="display:none;width:100%;gap:8px;align-items:center;">
+        <input type="text" id="feira-input-${i}" value="${f}" style="margin-bottom:0;flex:1;">
+        <button class="btn btn-primary" style="width:auto;padding:8px 14px;" onclick="salvarEdicaoFeira(${i})">Salvar</button>
+        <button class="btn btn-outline" style="padding:8px 14px;" onclick="cancelarEdicaoFeira(${i})">Cancelar</button>
+      </div>
+    </div>`).join('');
+}
+function iniciarEdicaoFeira(i){
+  document.getElementById('feira-view-'+i).style.display='none';
+  const ed=document.getElementById('feira-edit-'+i);
+  ed.style.display='flex';
+  document.getElementById('feira-input-'+i).focus();
+}
+function cancelarEdicaoFeira(i){
+  document.getElementById('feira-edit-'+i).style.display='none';
+  document.getElementById('feira-view-'+i).style.display='flex';
+}
+function salvarEdicaoFeira(i){
+  const v=document.getElementById('feira-input-'+i).value.trim();
+  if(!v)return;
+  feiras[i]=v; save('ps2_feiras',feiras);
+  renderFeirasConfig(); renderFeirasSel();
+}
+function adicionarFeira(){
+  const v=document.getElementById('f-nome').value.trim();
+  if(!v)return;
+  feiras.push(v); save('ps2_feiras',feiras);
+  document.getElementById('f-nome').value='';
+  renderFeirasConfig(); renderFeirasSel();
+}
+function removerFeira(i){
+  feiras.splice(i,1); save('ps2_feiras',feiras);
+  renderFeirasConfig(); renderFeirasSel();
+}
+
+/* ---- PRODUTOS ---- */
+function renderProdutosSel(){
+  const s=document.getElementById('v-produto');
+  s.innerHTML='<option value="">Selecione o produto...</option>';
+  produtos.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.nome+' — R$ '+p.preco.toFixed(2);s.appendChild(o);});
+}
+function renderProdutos(){
+  const el=document.getElementById('lista-produtos');
+  if(!produtos.length){el.innerHTML='<div class="empty">Nenhum produto.</div>';return;}
+  el.innerHTML=produtos.map(p=>`
+    <div class="row-item">
+      <div>
+        <div class="row-name">${p.nome}</div>
+        <div class="row-sub">R$ ${p.preco.toFixed(2)} · <span class="tag tag-pink">${p.cat}</span></div>
+      </div>
+      <button class="btn btn-ghost" onclick="removerProduto(${p.id})">✕</button>
+    </div>`).join('');
+}
+function adicionarProduto(){
+  const nome=document.getElementById('p-nome').value.trim();
+  const preco=parseFloat(document.getElementById('p-preco').value);
+  const cat=document.getElementById('p-cat').value;
+  if(!nome||!preco){alert('Preencha nome e preço.');return;}
+  produtos.push({id:Date.now(),nome,preco,cat});save('ps2_produtos',produtos);
+  renderProdutos();renderProdutosSel();
+  document.getElementById('p-nome').value='';document.getElementById('p-preco').value='';
+}
+function removerProduto(id){
+  produtos=produtos.filter(p=>p.id!==id);save('ps2_produtos',produtos);
+  renderProdutos();renderProdutosSel();
+}
+function calcTotal(){
+  const pid=document.getElementById('v-produto').value;
+  const prod=produtos.find(p=>p.id==pid);
+  const qtd=parseFloat(document.getElementById('v-qtd').value)||1;
+  const desc=parseFloat(document.getElementById('v-desc').value)||0;
+  document.getElementById('v-total').value=prod?'R$ '+Math.max(0,prod.preco*qtd-desc).toFixed(2):'';
+}
+function importarCSV(e){
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=function(ev){
+    const novos=[];
+    ev.target.result.split('\n').filter(l=>l.trim()).forEach(line=>{
+      const p=line.split(',');
+      if(p.length>=2){const nome=p[0].trim();const preco=parseFloat(p[1]);const cat=p[2]?p[2].trim():'Outro';if(nome&&preco){novos.push({id:Date.now()+Math.random(),nome,preco,cat});}}
+    });
+    if(!novos.length){alert('Nenhum produto encontrado no arquivo.');return;}
+    produtos=novos;
+    save('ps2_produtos',produtos);renderProdutos();renderProdutosSel();
+    alert(novos.length+' produto(s) importado(s). Catálogo substituído!');
+  };
+  r.readAsText(file);e.target.value='';
+}
+
+/* ---- CLIENTES ---- */
+function renderCliSel(){
+  const s=document.getElementById('v-cli-sel');
+  s.innerHTML='<option value="">Novo cliente / sem cadastro</option>';
+  clientes.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.nome+(c.tel?' · '+c.tel:'');s.appendChild(o);});
+}
+function preencherCliente(){
+  const id=document.getElementById('v-cli-sel').value;
+  const c=clientes.find(c=>c.id==id);
+  document.getElementById('v-cli-nome').value=c?c.nome:'';
+  document.getElementById('v-cli-tel').value=c?c.tel:'';
+  document.getElementById('v-cli-email').value=c?c.email:'';
+}
+function renderClientes(){
+  const el=document.getElementById('lista-clientes');
+  if(!clientes.length){el.innerHTML='<div class="empty">Nenhum cliente.</div>';return;}
+  el.innerHTML=clientes.map(c=>`
+    <div class="row-item">
+      <div>
+        <div class="row-name">${c.nome}</div>
+        <div class="row-sub">${c.tel?'📞 '+c.tel+' ':''}${c.email?'✉ '+c.email:''}</div>
+      </div>
+      <button class="btn btn-ghost" onclick="removerCliente(${c.id})">✕</button>
+    </div>`).join('');
+}
+function adicionarCliente(){
+  const nome=document.getElementById('c-nome').value.trim();
+  const tel=document.getElementById('c-tel').value.trim();
+  const email=document.getElementById('c-email').value.trim();
+  if(!nome){alert('Preencha o nome.');return;}
+  clientes.push({id:Date.now(),nome,tel,email});save('ps2_clientes',clientes);
+  renderClientes();renderCliSel();
+  document.getElementById('c-nome').value='';document.getElementById('c-tel').value='';document.getElementById('c-email').value='';
+}
+function removerCliente(id){
+  clientes=clientes.filter(c=>c.id!==id);save('ps2_clientes',clientes);
+  renderClientes();renderCliSel();
+}
+
+/* ---- VENDAS ---- */
+function registrarVenda(){
+  const local=document.getElementById('v-local').value;
+  const data=document.getElementById('v-data').value;
+  const pid=document.getElementById('v-produto').value;
+  const qtd=parseFloat(document.getElementById('v-qtd').value)||1;
+  const desc=parseFloat(document.getElementById('v-desc').value)||0;
+  const pgto=document.getElementById('v-pgto').value;
+  const obs=document.getElementById('v-obs').value.trim();
+  const cliNome=document.getElementById('v-cli-nome').value.trim();
+  const cliTel=document.getElementById('v-cli-tel').value.trim();
+  const cliEmail=document.getElementById('v-cli-email').value.trim();
+  const salvarCli=document.getElementById('v-salvar-cli').checked;
+
+  if(!local||!pid||!pgto){alert('Preencha: local, produto e forma de pagamento.');return;}
+  const prod=produtos.find(p=>p.id==pid);
+  const total=Math.max(0,prod.preco*qtd-desc);
+
+  if(salvarCli&&cliNome&&!clientes.find(c=>c.nome.toLowerCase()===cliNome.toLowerCase())){
+    clientes.push({id:Date.now(),nome:cliNome,tel:cliTel,email:cliEmail});
+    save('ps2_clientes',clientes);renderCliSel();
+  }
+
+  vendas.unshift({id:Date.now(),data,local,produto:prod.nome,categoria:prod.cat,preco:prod.preco,qtd,desconto:desc,total,pgto,obs,cliente:cliNome,clienteTel:cliTel,clienteEmail:cliEmail});
+  save('ps2_vendas',vendas);
+
+  ['v-produto','v-pgto','v-obs','v-cli-nome','v-cli-tel','v-cli-email','v-cli-sel'].forEach(id=>{
+    const el=document.getElementById(id);el.value='';
+  });
+  document.getElementById('v-qtd').value='1';
+  document.getElementById('v-desc').value='0';
+  document.getElementById('v-total').value='';
+  document.getElementById('v-salvar-cli').checked=false;
+
+  const msg=document.getElementById('alert-ok');
+  msg.style.display='block';setTimeout(()=>msg.style.display='none',3000);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderVendas(){
+  const el=document.getElementById('lista-vendas');
+  const fdEl=document.getElementById('filtro-data');
+  const fd=fdEl?fdEl.value:'';
+  const lista=fd?vendas.filter(v=>v.data===fd):vendas;
+  if(!lista.length){
+    const msg=fd?'Nenhuma venda em '+fd.split('-').reverse().join('/')+'.' :'Nenhuma venda ainda.';
+    el.innerHTML='<div class="empty">'+msg+'</div>';return;
+  }
+  el.innerHTML=lista.map(v=>{
+    const pc=v.pgto&&v.pgto.toLowerCase().includes('pix')?'pix':v.pgto&&v.pgto.toLowerCase().includes('dinheiro')?'dinheiro':'cartao';
+    const itensHtml=v.itens
+      ?v.itens.map(i=>`<div style="font-size:12px;color:var(--muted);padding:2px 0 2px 4px;">• ${i.nome} × ${i.qtd}${i.desconto>0?' (desc R$ '+parseFloat(i.desconto).toFixed(2)+')':''} = <b>R$ ${parseFloat(i.subtotal).toFixed(2)}</b></div>`).join('')
+      :`<div style="font-size:12px;color:var(--muted);padding:2px 0 2px 4px;">• ${v.produto||''} × ${v.qtd||1}</div>`;
+    const titulo=v.itens&&v.itens.length>1?v.itens.length+' produtos':(v.itens&&v.itens[0]?v.itens[0].nome:v.produto||'');
+    return `<div class="sale-row">
+      <div class="sale-top">
+        <span class="sale-produto">${titulo}</span>
+        <span class="sale-valor">R$ ${parseFloat(v.total).toFixed(2)}</span>
+      </div>
+      ${itensHtml}
+      <div class="sale-meta" style="margin-top:4px;">
+        📍 ${v.local} · ${v.data}
+        · <span class="tag tag-${pc}">${v.pgto}</span>
+        ${v.cliente?'<br>👤 '+v.cliente+(v.clienteTel?' · '+v.clienteTel:''):''}
+        ${v.obs?'<br>💬 '+v.obs:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function atualizarMetricas(){
+  const total=vendas.reduce((a,v)=>a+parseFloat(v.total),0);
+  const qtd=vendas.length;
+  document.getElementById('m-total').textContent='R$ '+total.toFixed(2);
+  document.getElementById('m-qtd').textContent=qtd;
+  document.getElementById('m-ticket').textContent=qtd?'R$ '+(total/qtd).toFixed(2):'R$ 0';
+}
+function exportarVendasCSV(apenasDia){
+  const fdEl=document.getElementById('filtro-data');
+  const fd=fdEl?fdEl.value:'';
+  const lista=(apenasDia&&fd)?vendas.filter(v=>v.data===fd):vendas;
+  if(!lista.length){alert('Nenhuma venda para exportar.');return;}
+  const h='VendaID,Data,Local,Produto,Categoria,Qtd,Preco Unit.,Desconto,Total Item,Total Venda,Pagamento,Cliente,Telefone,Email,Observacoes\n';
+  const rows=[];
+  lista.forEach(v=>{
+    if(v.itens&&v.itens.length){
+      v.itens.forEach(i=>rows.push([v.id,v.data,v.local,i.nome,i.cat||'',i.qtd,i.preco,i.desconto||0,i.subtotal,v.total,v.pgto,v.cliente||'',v.clienteTel||'',v.clienteEmail||'',v.obs||''].join(',')));
+    } else {
+      rows.push([v.id,v.data,v.local,v.produto||'',v.categoria||'',v.qtd||1,v.preco||0,v.desconto||0,v.total,v.total,v.pgto,v.cliente||'',v.clienteTel||'',v.clienteEmail||'',v.obs||''].join(','));
+    }
+  });
+  const nomeFmt=fd?fd.split('-').reverse().join('-'):'';
+  const nome=(apenasDia&&fd)?'vendas_'+nomeFmt+'.csv':'petit_sabo_vendas.csv';
+  baixarCSV('\ufeff'+h+rows.join('\n'),nome);
+}
+function exportarClientesCSV(){
+  if(!clientes.length){alert('Nenhum cliente para exportar.');return;}
+  const h='Nome,Telefone,Email\n';
+  const rows=clientes.map(c=>[c.nome,c.tel||'',c.email||''].join(',')).join('\n');
+  baixarCSV('\ufeff'+h+rows,'petit_sabo_clientes.csv');
+}
+function baixarCSV(conteudo,nome){
+  const b=new Blob([conteudo],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=nome;a.click();
+}
+function limparVendas(){
+  vendas=[];save('ps2_vendas',vendas);renderVendas();atualizarMetricas();
+}
+
+function exportarBackup(){
+  var backup={vendas:vendas,produtos:produtos,clientes:clientes,feiras:feiras,ts:new Date().toISOString()};
+  var b=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  var d=new Date().toISOString().split('T')[0];
+  a.href=URL.createObjectURL(b);a.download='petit_sabo_backup_'+d+'.json';a.click();
+}
+function restaurarBackup(e){
+  var file=e.target.files[0];if(!file)return;
+  var r=new FileReader();
+  r.onload=function(ev){
+    try{
+      var data=JSON.parse(ev.target.result);
+      if(data.vendas)  {vendas=data.vendas;  save('ps2_vendas',vendas);}
+      if(data.produtos){produtos=data.produtos;save('ps2_produtos',produtos);}
+      if(data.clientes){clientes=data.clientes;save('ps2_clientes',clientes);}
+      if(data.feiras)  {feiras=data.feiras;  save('ps2_feiras',feiras);}
+      renderVendas();renderProdutos();renderProdutosSelect();renderClientes();renderCliSel();renderFeirasConfig();renderFeirasSel();atualizarMetricas();
+      var al=document.getElementById('alert-backup');
+      al.textContent='Backup restaurado com sucesso! ('+new Date(data.ts).toLocaleDateString('pt-BR')+')';
+      al.style.display='block';setTimeout(function(){al.style.display='none';},4000);
+    }catch(err){alert('Arquivo invalido. Use um backup .json gerado por este app.');}
+  };
+  r.readAsText(file);e.target.value='';
+}
+
+// ── GUIA DO DIA ──
+var checklistState = JSON.parse(localStorage.getItem('ps2_checklist') || '{}');
+
+var guiaSteps = {
+  antes: [
+    {ico:'&#x1F4F1;', txt:'Abra o app no celular e confirme que o catálogo está atualizado', tab:'catalogo'},
+    {ico:'&#x1F4CD;', txt:'Selecione o local correto na aba Nova Venda', tab:'venda'},
+    {ico:'&#x1F4C5;', txt:'Confirme que a data do dia está certa no campo de data', tab:'venda'},
+  ],
+  durante: [
+    {ico:'&#x1F6D2;', txt:'A cada venda: selecione produto, preencha quantidade, desconto e pagamento', tab:'venda'},
+    {ico:'&#x1F464;', txt:'Se a cliente quiser cadastro: preencha nome, telefone e e-mail', tab:'venda'},
+    {ico:'&#x2714;', txt:'Toque em "Registrar venda" — o app salva automaticamente', tab:'venda'},
+  ],
+  fechamento: [
+    {ico:'&#x1F4CA;', txt:'Acesse Histórico, filtre pela data de hoje e confira as vendas', tab:'historico'},
+    {ico:'&#x2B07;', txt:'Toque em "Exportar dia" para salvar o CSV do dia', tab:'historico'},
+    {ico:'&#x1F4BE;', txt:'Em Config > Backup: toque em "Baixar backup" para salvar tudo', tab:'config'},
+    {ico:'&#x1F4E4;', txt:'Envie o CSV do dia para a Karine via WhatsApp', tab:null},
+  ]
+};
+
+var checklistAll = [
+  {id:'c1', txt:'Catálogo atualizado'},
+  {id:'c2', txt:'Local e data conferidos'},
+  {id:'c3', txt:'Todas as vendas registradas'},
+  {id:'c4', txt:'CSV do dia exportado'},
+  {id:'c5', txt:'Backup baixado'},
+  {id:'c6', txt:'CSV enviado para a Karine'},
+];
+
+function renderGuia(){
+  function makeSteps(steps, containerId){
+    var el=document.getElementById(containerId);if(!el)return;
+    el.innerHTML=steps.map(function(s,i){
+      var tabBtn=s.tab?'<button onclick="showTab(''+s.tab+'')" style="font-size:11px;background:var(--pink-light);color:var(--pink-dark,#993556);border:none;border-radius:20px;padding:2px 10px;cursor:pointer;margin-top:4px;font-family:inherit;">Ir para '+s.tab+'</button>':'';
+      return '<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">'+
+        '<div style="font-size:18px;min-width:26px;text-align:center;">'+s.ico+'</div>'+
+        '<div><div style="font-size:13px;line-height:1.5;">'+s.txt+'</div>'+tabBtn+'</div>'+
+        '</div>';
+    }).join('');
+  }
+  makeSteps(guiaSteps.antes,'steps-antes');
+  makeSteps(guiaSteps.durante,'steps-durante');
+  makeSteps(guiaSteps.fechamento,'steps-fechamento');
+
+  var cl=document.getElementById('checklist-items');if(!cl)return;
+  var done=0;
+  cl.innerHTML=checklistAll.map(function(c){
+    var checked=!!checklistState[c.id];
+    if(checked)done++;
+    return '<label style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;font-size:13px;">'+
+      '<input type="checkbox" '+(checked?'checked':'')+' style="width:auto;margin:0;accent-color:var(--pink);width:16px;height:16px;" onchange="toggleCheck(''+c.id+'',this.checked)">'+
+      '<span style="'+(checked?'text-decoration:line-through;color:var(--muted);':'')+'">'+c.txt+'</span>'+
+      '</label>';
+  }).join('');
+  var prog=document.getElementById('check-progress');
+  if(prog)prog.textContent=done+' / '+checklistAll.length;
+}
+
+function toggleCheck(id,val){
+  checklistState[id]=val;
+  localStorage.setItem('ps2_checklist',JSON.stringify(checklistState));
+  var prog=document.getElementById('check-progress');
+  if(prog){
+    var done=Object.values(checklistState).filter(Boolean).length;
+    prog.textContent=done+' / '+checklistAll.length;
+  }
+}
+
+function resetChecklist(){
+  checklistState={};localStorage.removeItem('ps2_checklist');renderGuia();
+}
+</script>
+</body>
+</html>
