@@ -1,10 +1,10 @@
-# Sofia 2.0 — Configuração
-# Execute /sofia-setup para configurar automaticamente
+# Sofia 3.1 — Configuração
+# Execute /sofia:setup para reconfigurar
 
 sofia:
   # API Keys
-  apify_api_key: ""          # Obrigatório para Instagram/TikTok
-  youtube_api_key: ""        # Opcional (usa yt-dlp como fallback grátis)
+  apify_api_key: ""          # Necessário para Instagram/TikTok
+  youtube_api_key: ""        # Opcional (yt-dlp usado como fallback grátis)
   firecrawl_api_key: ""      # Opcional (para scraping auxiliar)
 
   # Output
@@ -12,9 +12,14 @@ sofia:
   output_format: "obsidian"  # obsidian | markdown | json
 
   # Ambiente
-  ambiente: ""               # claude-code | gemini | outro
+  ambiente: "claude-code"
   setup_completo: false
   data_setup: ""
+
+  # Dependências verificadas
+  dependencias:
+    node_version: "v22.22.2"
+    ytdlp_version: "2026.03.17"
 
   # Preferências
   idioma: "pt-BR"
