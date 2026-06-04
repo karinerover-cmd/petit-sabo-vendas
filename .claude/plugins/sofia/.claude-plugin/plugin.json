@@ -1,0 +1,22 @@
+{
+  "name": "sofia",
+  "description": "Plugin inteligente para pesquisa de vídeos virais e escrita de roteiros, guiado por princípios de Psicologia Cognitiva do Engajamento.",
+  "version": "3.1.0",
+  "author": {
+    "name": "srbentostk"
+  },
+  "repository": "https://github.com/srbentostk/smart-content-plugin",
+  "license": "MIT",
+  "homepage": "https://github.com/srbentostk/smart-content-plugin#readme",
+  "keywords": [
+    "roteiro",
+    "viral",
+    "engajamento",
+    "conteudo",
+    "psicologia-cognitiva",
+    "video",
+    "instagram",
+    "youtube",
+    "tiktok"
+  ]
+}
