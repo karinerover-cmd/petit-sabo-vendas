@@ -3,18 +3,19 @@
 
 sofia:
   # API Keys
-  apify_api_key: ""          # Necessário para Instagram/TikTok
+  apify_api_key: "${APIFY_API_KEY}"  # Set via: export APIFY_API_KEY=your_key
   youtube_api_key: ""        # Opcional (yt-dlp usado como fallback grátis)
   firecrawl_api_key: ""      # Opcional (para scraping auxiliar)
 
   # Output
-  obsidian_vault_path: ""    # Onde salvar análises e roteiros
-  output_format: "obsidian"  # obsidian | markdown | json
+  obsidian_vault_path: ""
+  output_path: "~/Desktop/Sofia"
+  output_format: "markdown"
 
   # Ambiente
   ambiente: "claude-code"
-  setup_completo: false
-  data_setup: ""
+  setup_completo: true
+  data_setup: "2026-06-05"
 
   # Dependências verificadas
   dependencias:
