@@ -8,6 +8,30 @@ description: Analisa vídeo(s) viral(is) mostrando o que faz cada parte funciona
 
 Usuário cola link(s) de vídeo ou pede para analisar conteúdo.
 
+## VERIFICAÇÃO DE AMBIENTE (PRIMEIRO PASSO — OBRIGATÓRIO)
+
+Antes de qualquer coisa, verificar se a rede tem acesso externo:
+
+```bash
+curl -s --max-time 5 -o /dev/null -w "%{http_code}" "https://api.apify.com" 2>&1
+```
+
+**Se retornar "Host not in allowlist" ou falhar:** esta sessão está rodando num container remoto sem acesso ao TikTok/Instagram/YouTube/Apify. NÃO tente fazer chamadas de rede — elas vão falhar.
+
+Nesse caso, responder IMEDIATAMENTE em português:
+
+> **Sofia não consegue acessar vídeos nesta sessão.**
+>
+> Esta sessão do Claude Code roda num servidor remoto que não tem acesso ao TikTok, Instagram ou YouTube.
+>
+> **Para analisar agora, escolha uma opção:**
+>
+> **1. Cole o conteúdo aqui** — Abra o vídeo, copie o texto falado (pode ativar a legenda automática no TikTok) e cole aqui. Eu analiso tudo com os princípios de engajamento.
+>
+> **2. Rode no terminal do seu PC** — Abra o terminal e rode `claude`, aí o acesso à rede funciona normalmente.
+
+Parar aqui. Não tentar extrair dados. Não inventar conteúdo.
+
 ## Antes de analisar — pergunte (1-2 perguntas)
 
 Não saia analisando sem saber pra quê:
