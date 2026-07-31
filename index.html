@@ -172,7 +172,11 @@
         Adicionar ao carrinho
       </div>
       <label>Produto</label>
-      <select id="v-produto" onchange="calcTotal()" style="margin-bottom:10px;"><option value="">Selecione o produto...</option></select>
+      <div style="position:relative;margin-bottom:10px;">
+        <input type="text" id="v-busca-produto" placeholder="&#128269; Buscar produto..." oninput="filtrarProdutos()" onfocus="abrirListaProdutos()" style="margin-bottom:0;" autocomplete="off">
+        <div id="v-lista-produtos" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm,8px);max-height:200px;overflow-y:auto;z-index:100;box-shadow:0 4px 16px rgba(0,0,0,.12);margin-top:3px;"></div>
+      </div>
+      <input type="hidden" id="v-produto">
       <div class="grid2" style="margin-bottom:10px;">
         <div><label>Qtd</label><input type="number" id="v-qtd" value="1" min="1" oninput="calcTotal()"></div>
         <div><label>Subtotal</label><input type="text" id="v-total" readonly placeholder="R$ 0,00"></div>
@@ -568,10 +572,54 @@ function removerFeira(i){
 
 /* ---- PRODUTOS ---- */
 function renderProdutosSel(){
-  const s=document.getElementById('v-produto');
-  s.innerHTML='<option value="">Selecione o produto...</option>';
-  produtos.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.nome+' — R$ '+p.preco.toFixed(2);s.appendChild(o);});
+  // Catalog updated - reset search if selected product no longer exists
+  const pid=document.getElementById('v-produto');
+  const busca=document.getElementById('v-busca-produto');
+  if(pid&&pid.value&&!produtos.find(p=>String(p.id)===String(pid.value))){
+    if(pid)pid.value='';
+    if(busca)busca.value='';
+  }
 }
+
+function abrirListaProdutos(){
+  filtrarProdutos();
+  document.getElementById('v-lista-produtos').style.display='block';
+}
+
+function filtrarProdutos(){
+  const busca=(document.getElementById('v-busca-produto').value||'').toLowerCase().trim();
+  const lista=document.getElementById('v-lista-produtos');
+  const filtered=produtos.filter(p=>p.qtd>0&&(!busca||p.nome.toLowerCase().includes(busca)||(p.cat||'').toLowerCase().includes(busca)));
+  if(!filtered.length){
+    lista.innerHTML='<div style="padding:10px 14px;font-size:13px;color:var(--muted);">Nenhum produto encontrado.</div>';
+  } else {
+    lista.innerHTML=filtered.map(function(p){
+      var pid=String(p.id);
+      return '<div onclick="selecionarProduto('+JSON.stringify(pid)+')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);">'+
+        '<div style="font-size:13px;font-weight:500;">'+p.nome+'</div>'+
+        '<div style="font-size:11px;color:var(--muted);">'+p.cat+' &middot; R$ '+p.preco.toFixed(2)+' &middot; '+p.qtd+' un.</div>'+
+      '</div>';
+    }).join('');
+  }
+  lista.style.display='block';
+}
+
+function selecionarProduto(pid){
+  const p=produtos.find(x=>String(x.id)===String(pid));
+  if(!p)return;
+  document.getElementById('v-produto').value=pid;
+  document.getElementById('v-busca-produto').value=p.nome+' — R$ '+p.preco.toFixed(2);
+  document.getElementById('v-lista-produtos').style.display='none';
+  calcTotal();
+}
+
+document.addEventListener('click',function(e){
+  const lista=document.getElementById('v-lista-produtos');
+  const busca=document.getElementById('v-busca-produto');
+  if(lista&&busca&&e.target!==busca&&!lista.contains(e.target)){
+    lista.style.display='none';
+  }
+});
 function renderProdutos(){
   const el=document.getElementById('lista-produtos');
   if(!produtos.length){el.innerHTML='<div class="empty">Nenhum produto.</div>';return;}
@@ -699,6 +747,8 @@ function finalizarVenda(){
   vendas.unshift({id:Date.now(),data,local,itens:carrinho.map(function(i){return Object.assign({},i);}),subtotalItens:subtotalGeral,descontoTotal:cartDescVal,total,pgto,obs,cliente:cliNome,clienteTel:cliTel,clienteEmail:cliEmail});
   save('ps2_vendas',vendas);
   carrinho=[];
+  var bp=document.getElementById('v-busca-produto');if(bp)bp.value='';
+  var pid2=document.getElementById('v-produto');if(pid2)pid2.value='';
   var cd=document.getElementById('cart-desc');if(cd)cd.value='0';
   var cdt=document.getElementById('cart-desc-tipo');if(cdt)cdt.value='R$';
   renderCarrinho();
