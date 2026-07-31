@@ -589,7 +589,7 @@ function abrirListaProdutos(){
 function filtrarProdutos(){
   const busca=(document.getElementById('v-busca-produto').value||'').toLowerCase().trim();
   const lista=document.getElementById('v-lista-produtos');
-  const filtered=produtos.filter(p=>p.qtd>0&&(!busca||p.nome.toLowerCase().includes(busca)||(p.cat||'').toLowerCase().includes(busca)));
+  const filtered=produtos.filter(p=>!busca||p.nome.toLowerCase().includes(busca)||(p.cat||'').toLowerCase().includes(busca));
   if(!filtered.length){
     lista.innerHTML='<div style="padding:10px 14px;font-size:13px;color:var(--muted);">Nenhum produto encontrado.</div>';
   } else {
