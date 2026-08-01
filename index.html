@@ -609,13 +609,19 @@ function filtrarProdutos(){
   } else {
     lista.innerHTML=filtered.map(function(p){
       var pid=String(p.id);
-      return '<div onmousedown="selecionarProduto('+JSON.stringify(pid)+')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);">'+
-        '<div style="font-size:13px;font-weight:500;">'+p.nome+'</div>'+
-        '<div style="font-size:11px;color:var(--muted);">'+p.cat+' &middot; R$ '+p.preco.toFixed(2)+' &middot; '+p.qtd+' un.</div>'+
+      var safePid=pid.replace(/"/g,'&quot;');
+      var el='<div data-pid="'+safePid+'" onclick="event.stopPropagation();selecionarProdutoEl(this)" style="padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);">'+
+        '<div style="font-size:14px;font-weight:500;">'+p.nome+'</div>'+
+        '<div style="font-size:12px;color:var(--muted);margin-top:2px;">'+p.cat+' &middot; R$ '+p.preco.toFixed(2)+(p.qtd?' &middot; '+p.qtd+' un.':'')+'</div>'+
       '</div>';
+      return el;
     }).join('');
   }
   lista.style.display='block';
+}
+
+function selecionarProdutoEl(el){
+  selecionarProduto(el.getAttribute('data-pid'));
 }
 
 function selecionarProduto(pid){
@@ -628,8 +634,8 @@ function selecionarProduto(pid){
 }
 
 document.addEventListener('click',function(e){
-  const lista=document.getElementById('v-lista-produtos');
-  const busca=document.getElementById('v-busca-produto');
+  var lista=document.getElementById('v-lista-produtos');
+  var busca=document.getElementById('v-busca-produto');
   if(lista&&busca&&e.target!==busca&&!lista.contains(e.target)){
     lista.style.display='none';
   }
