@@ -436,10 +436,15 @@
 </div><!-- /content -->
 
 <script>
-let produtos = JSON.parse(localStorage.getItem('ps2_produtos') || 'null');
-let vendas   = JSON.parse(localStorage.getItem('ps2_vendas')   || '[]');
-let clientes = JSON.parse(localStorage.getItem('ps2_clientes') || '[]');
-let feiras   = JSON.parse(localStorage.getItem('ps2_feiras')   || 'null');
+// Safe storage wrapper - funciona mesmo quando localStorage é bloqueado
+var _mem={};
+function _lsGet(k,d){try{var v=window.localStorage&&window.localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return _mem[k]!==undefined?_mem[k]:d;}}
+function _lsSet(k,v){try{window.localStorage&&window.localStorage.setItem(k,JSON.stringify(v));}catch(e){_mem[k]=v;}}
+
+let produtos = _lsGet('ps2_produtos', null);
+let vendas   = _lsGet('ps2_vendas',   []);
+let clientes = _lsGet('ps2_clientes', []);
+let feiras   = _lsGet('ps2_feiras',   null);
 
 if (!produtos) {
   produtos = [
@@ -456,9 +461,18 @@ if (!feiras) {
   save('ps2_feiras', feiras);
 }
 
-function save(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
 
-var checklistState = JSON.parse(localStorage.getItem('ps2_checklist') || '{}');
+function toast(msg, ok){
+  var t=document.createElement('div');
+  t.textContent=msg;
+  t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:10px;font-size:13px;z-index:9999;color:#fff;text-align:center;max-width:90vw;box-shadow:0 4px 16px rgba(0,0,0,.2);background:'+(ok===false?'#A32D2D':'#3B6D11')+';';
+  document.body.appendChild(t);
+  setTimeout(function(){t.remove();},3500);
+}
+
+function save(k,v){ _lsSet(k,v); }
+
+var checklistState = _lsGet('ps2_checklist', {});
 
 var guiaSteps = {
   antes: [
@@ -595,7 +609,7 @@ function filtrarProdutos(){
   } else {
     lista.innerHTML=filtered.map(function(p){
       var pid=String(p.id);
-      return '<div onclick="selecionarProduto('+JSON.stringify(pid)+')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);">'+
+      return '<div onmousedown="selecionarProduto('+JSON.stringify(pid)+')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);">'+
         '<div style="font-size:13px;font-weight:500;">'+p.nome+'</div>'+
         '<div style="font-size:11px;color:var(--muted);">'+p.cat+' &middot; R$ '+p.preco.toFixed(2)+' &middot; '+p.qtd+' un.</div>'+
       '</div>';
@@ -636,7 +650,7 @@ function adicionarProduto(){
   const nome=document.getElementById('p-nome').value.trim();
   const preco=parseFloat(document.getElementById('p-preco').value);
   const cat=document.getElementById('p-cat').value;
-  if(!nome||!preco){alert('Preencha nome e preço.');return;}
+  if(!nome||!preco){toast('Preencha nome e preço.',false);return;}
   produtos.push({id:Date.now(),nome,preco,cat});save('ps2_produtos',produtos);
   renderProdutos();renderProdutosSel();
   document.getElementById('p-nome').value='';document.getElementById('p-preco').value='';
@@ -654,7 +668,7 @@ function adicionarAoCarrinho(){
   const qtd=parseInt(document.getElementById('v-qtd').value)||1;
   const desc=parseFloat(document.getElementById('v-desc').value)||0;
   const tipo=document.getElementById('v-desc-tipo').value;
-  if(!prod){alert('Selecione um produto.');return;}
+  if(!prod){toast('Selecione um produto.',false);return;}
   const base=prod.preco*qtd;
   const descVal=tipo==='%'?base*(desc/100):desc;
   const descLabel=desc>0?(tipo==='%'?desc+'%':'R$ '+descVal.toFixed(2)):'';
@@ -862,7 +876,7 @@ function adicionarCliente(){
   const nome=document.getElementById('c-nome').value.trim();
   const tel=document.getElementById('c-tel').value.trim();
   const email=document.getElementById('c-email').value.trim();
-  if(!nome){alert('Preencha o nome.');return;}
+  if(!nome){toast('Preencha o nome.',false);return;}
   clientes.push({id:Date.now(),nome,tel,email});save('ps2_clientes',clientes);
   renderClientes();renderCliSel();
   document.getElementById('c-nome').value='';document.getElementById('c-tel').value='';document.getElementById('c-email').value='';
@@ -920,7 +934,7 @@ function exportarVendasCSV(apenasDia){
   const fdEl=document.getElementById('filtro-data');
   const fd=fdEl?fdEl.value:'';
   const lista=(apenasDia&&fd)?vendas.filter(v=>v.data===fd):vendas;
-  if(!lista.length){alert('Nenhuma venda para exportar.');return;}
+  if(!lista.length){toast('Nenhuma venda para exportar.',false);return;}
   const h='VendaID,Data,Local,Produto,Categoria,Qtd,Preco Unit.,Desconto,Total Item,Total Venda,Pagamento,Cliente,Telefone,Email,Observacoes\n';
   const rows=[];
   lista.forEach(v=>{
@@ -935,7 +949,7 @@ function exportarVendasCSV(apenasDia){
   baixarCSV('\ufeff'+h+rows.join('\n'),nome);
 }
 function exportarClientesCSV(){
-  if(!clientes.length){alert('Nenhum cliente para exportar.');return;}
+  if(!clientes.length){toast('Nenhum cliente para exportar.',false);return;}
   const h='Nome,Telefone,Email\n';
   const rows=clientes.map(c=>[c.nome,c.tel||'',c.email||''].join(',')).join('\n');
   baixarCSV('\ufeff'+h+rows,'petit_sabo_clientes.csv');
@@ -969,7 +983,7 @@ function restaurarBackup(e){
       var al=document.getElementById('alert-backup');
       al.textContent='Backup restaurado com sucesso! ('+new Date(data.ts).toLocaleDateString('pt-BR')+')';
       al.style.display='block';setTimeout(function(){al.style.display='none';},4000);
-    }catch(err){alert('Arquivo invalido. Use um backup .json gerado por este app.');}
+    }catch(err){toast('Arquivo inválido. Use um backup gerado por este app.',false);}
   };
   r.readAsText(file);e.target.value='';
 }
@@ -1008,7 +1022,7 @@ function renderGuia(){
 
 function toggleCheck(id,val){
   checklistState[id]=val;
-  localStorage.setItem('ps2_checklist',JSON.stringify(checklistState));
+  _lsSet('ps2_checklist',checklistState);
   var prog=document.getElementById('check-progress');
   if(prog){
     var done=Object.values(checklistState).filter(Boolean).length;
@@ -1017,7 +1031,7 @@ function toggleCheck(id,val){
 }
 
 function resetChecklist(){
-  checklistState={};localStorage.removeItem('ps2_checklist');renderGuia();
+  checklistState={};_lsSet('ps2_checklist',{});renderGuia();
 }
 
 // ── EDITAR / EXCLUIR VENDA ──
