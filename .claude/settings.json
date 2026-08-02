@@ -1,0 +1,31 @@
+{
+  "plugins": {
+    "marketplaces": [
+      {
+        "name": "srbentostk",
+        "source": "https://github.com/srbentostk/smart-content-plugin",
+        "description": "Plugins por srbentostk — ferramentas de conteúdo e criatividade"
+      }
+    ],
+    "installed": [
+      {
+        "name": "sofia",
+        "version": "3.1.0",
+        "source": "https://github.com/srbentostk/smart-content-plugin",
+        "path": ".claude/plugins/sofia",
+        "author": "srbentostk",
+        "description": "Plugin inteligente para pesquisa de vídeos virais e escrita de roteiros, guiado por princípios de Psicologia Cognitiva do Engajamento.",
+        "skills": [
+          "sofia:setup",
+          "sofia:analisar",
+          "sofia:roteiro",
+          "sofia:critica",
+          "sofia:melhorar",
+          "sofia:dashboard",
+          "sofia:exportar"
+        ],
+        "status": "installed"
+      }
+    ]
+  }
+}

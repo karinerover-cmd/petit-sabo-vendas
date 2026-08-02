@@ -1,0 +1,28 @@
+# Sofia 3.1 — Configuração
+# Execute /sofia:setup para reconfigurar
+
+sofia:
+  # API Keys
+  apify_api_key: "${APIFY_API_KEY}"  # Set via: export APIFY_API_KEY=your_key
+  youtube_api_key: ""        # Opcional (yt-dlp usado como fallback grátis)
+  firecrawl_api_key: ""      # Opcional (para scraping auxiliar)
+
+  # Output
+  obsidian_vault_path: ""
+  output_path: "~/Desktop/Sofia"
+  output_format: "markdown"
+
+  # Ambiente
+  ambiente: "claude-code"
+  setup_completo: true
+  data_setup: "2026-06-05"
+
+  # Dependências verificadas
+  dependencias:
+    node_version: "v22.22.2"
+    ytdlp_version: "2026.03.17"
+
+  # Preferências
+  idioma: "pt-BR"
+  max_comentarios: 20        # Quantos comentários extrair por vídeo
+  auto_aprender: false       # Salvar padrões automaticamente após análise
